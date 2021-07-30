@@ -8,20 +8,12 @@ resource "aws_eip" "wireguard" {
 resource "aws_route53_record" "wireguard" {
   count           = var.use_route53 ? 1 : 0
   allow_overwrite = true
-  set_identifier  = "${var.env}-${var.aws_region}-wireguard"
+  set_identifier  = "${var.env}-${var.region}-wireguard"
   zone_id         = var.route53_hosted_zone_id
   name            = var.route53_record_name
   type            = "A"
   ttl             = "60"
   records         = [aws_eip.wireguard.public_ip]
-
-  dynamic "geolocation_routing_policy" {
-    for_each = try(length(var.route53_geo.policy) > 0 ? var.route53_geo.policy : tomap(false), {})
-
-    content {
-      continent = geolocation_routing_policy.value.continent
-    }
-  }
 }
 
 data "template_file" "wg_client_data_json" {
@@ -29,9 +21,9 @@ data "template_file" "wg_client_data_json" {
   count    = length(var.wg_clients)
 
   vars = {
-    friendly_name        = var.wg_clients[count.index].friendly_name
-    client_pub_key       = var.wg_clients[count.index].public_key
-    client_ip            = var.wg_clients[count.index].client_ip
+    client_friendly_name = var.wg_clients[count.index].client_friendly_name
+    client_public_key    = var.wg_clients[count.index].client_public_key
+    client_allowed_cidr  = var.wg_clients[count.index].client_allowed_cidr
     persistent_keepalive = var.wg_persistent_keepalive
   }
 }
@@ -51,7 +43,7 @@ data "aws_ami" "ubuntu" {
 
 resource "aws_launch_configuration" "wireguard_launch_config" {
   name_prefix          = "${var.env}-wireguard-"
-  image_id             = var.ami_id == null ? data.aws_ami.ubuntu.id : var.ami_id
+  image_id             = data.aws_ami.ubuntu.id
   instance_type        = var.instance_type
   key_name             = var.ssh_key_id
   iam_instance_profile = (var.use_eip ? aws_iam_instance_profile.wireguard_profile[0].name : null)
@@ -75,9 +67,9 @@ resource "aws_launch_configuration" "wireguard_launch_config" {
 resource "aws_autoscaling_group" "wireguard_asg" {
   name                 = aws_launch_configuration.wireguard_launch_config.name
   launch_configuration = aws_launch_configuration.wireguard_launch_config.name
-  min_size             = var.asg_min_size
-  desired_capacity     = var.asg_desired_capacity
-  max_size             = var.asg_max_size
+  min_size             = 1
+  desired_capacity     = 1
+  max_size             = 1
   vpc_zone_identifier  = var.subnet_ids
   health_check_type    = "EC2"
   termination_policies = ["OldestLaunchConfiguration", "OldestInstance"]

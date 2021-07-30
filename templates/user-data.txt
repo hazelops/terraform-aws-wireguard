@@ -22,6 +22,7 @@ rm -f awscliv2.zip && \
 ./aws/install
 
 cat > /etc/wireguard/wg0.conf <<- EOF
+# Managed by Terraform
 [Interface]
 Address = ${wg_server_net}
 PrivateKey = ${wg_server_private_key}
@@ -58,6 +59,10 @@ until systemctl is-active --quiet wg-quick@wg0.service
 do
   sleep 1
 done
+
+sysctl -w net.ipv6.conf.all.disable_ipv6=1
+sysctl -w net.ipv6.conf.default.disable_ipv6=1
+sysctl -w net.ipv6.conf.lo.disable_ipv6=1
 
 ufw allow ssh
 ufw allow ${wg_server_port}/udp

@@ -1,5 +1,5 @@
 [Peer]
-# friendly_name = ${friendly_name}
-PublicKey = ${client_pub_key}
-AllowedIPs = ${client_ip}
+# client_friendly_name = ${client_friendly_name}
+PublicKey = ${client_public_key}
+AllowedIPs = ${client_allowed_cidr}
 PersistentKeepalive = ${persistent_keepalive}

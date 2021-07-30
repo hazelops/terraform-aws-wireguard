@@ -1,9 +1,9 @@
-variable "aws_region" {
+variable "region" {
   type = string
 }
 
 variable "env" {
-  description = "The name of environment for Wireguard."
+  description = "The name of environment for WireGuard. Used to differentiate multiple deployments."
 }
 
 variable "ssh_key_id" {
@@ -11,23 +11,8 @@ variable "ssh_key_id" {
 }
 
 variable "instance_type" {
-  default     = "t2.micro"
+  default     = "t3.nano"
   description = "The machine type to launch, some machines may offer higher throughput for higher use cases."
-}
-
-variable "asg_min_size" {
-  default     = 1
-  description = "We may want more than one machine in a scaling group, but 1 is recommended."
-}
-
-variable "asg_desired_capacity" {
-  default     = 1
-  description = "We may want more than one machine in a scaling group, but 1 is recommended."
-}
-
-variable "asg_max_size" {
-  default     = 1
-  description = "We may want more than one machine in a scaling group, but 1 is recommended."
 }
 
 variable "vpc_id" {
@@ -40,7 +25,7 @@ variable "subnet_ids" {
 }
 
 variable "wg_clients" {
-  type        = list(object({ friendly_name = string, public_key = string, client_ip = string }))
+  type        = list(object({ client_friendly_name = string, client_public_key = string, client_allowed_cidr = string }))
   description = "List of client objects with IP and public key. See Usage in README for details."
 }
 
@@ -73,13 +58,7 @@ variable "target_group_arns" {
 
 variable "wg_server_private_key" {
   type        = string
-  default     = null
-  description = "Wireguard server private key."
-}
-
-variable "ami_id" {
-  default     = null # we check for this and use a data provider since we can't use it here
-  description = "The AWS AMI to use for the Wireguard server, defaults to the latest Ubuntu 20.04 AMI if not specified."
+  description = "WG server private key."
 }
 
 variable "wg_server_interface" {
@@ -90,7 +69,7 @@ variable "wg_server_interface" {
 variable "use_route53" {
   type        = bool
   default     = false
-  description = "Whether to use SSM to store Wireguard Server private key."
+  description = "Whether to use Route53"
 }
 
 variable "route53_hosted_zone_id" {
@@ -103,10 +82,4 @@ variable "route53_record_name" {
   type        = string
   default     = null
   description = "Route53 Record name."
-}
-
-variable "route53_geo" {
-  type        = any
-  default     = null
-  description = "Route53 Geolocation config."
 }
