@@ -19,13 +19,13 @@ Before using this module, you'll need to:
 4. Add each client's public key, along with the next available IP address to the `wg_clients` list.
 
 5. Add server's private key to the `wg_server_private_key` variable. You can use AWS SSM Parameter store to store and read server private key.
-  5.1 To store private key you could use this command: 
+  5.1 To store the private key you could use this command: 
     
    ```shell
     aws ssm put-parameter --name /wireguard/wg-server-private-key --type SecureString --value <Your Server Private Key>
     ```
    
-6. To create working configuration for gui wireguard client, you should create conf file from this template:
+6. To create working configuration for the GUI WireGuard client, you should create a conf file from this template:
 
 ```toml
 [Interface]
